@@ -12,6 +12,8 @@
 #include <opencv/ml.h>		  // opencv machine learning include file
 //in order to compile i had to add opencv/ in front of the two header files
 
+//to compile, add -lopencv_core and -lopencv_ml to the g++ command
+
 using namespace cv; // OpenCV API is in the C++ "cv" namespace
 
 #include <stdio.h>
