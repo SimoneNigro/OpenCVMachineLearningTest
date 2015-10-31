@@ -25,7 +25,9 @@ using namespace cv; // OpenCV API is in the C++ "cv" namespace
 #define ATTRIBUTES_PER_SAMPLE 64
 #define NUMBER_OF_TESTING_SAMPLES 1797
 
-#define NUMBER_OF_CLASSES 10
+
+//#define NUMBER_OF_CLASSES 10
+#define NUMBER_OF_CLASSES 8
 
 // N.B. classes are integer handwritten digits in range 0-9
 
