@@ -19,6 +19,8 @@ using namespace cv; // OpenCV API is in the C++ "cv" namespace
 #include <stdio.h>
 #include <string.h>
 #include <fstream>
+#include <vector>
+#include <sstream>
 /******************************************************************************/
 // global definitions (for speed and ease of use)
 /*
@@ -35,6 +37,22 @@ using namespace cv; // OpenCV API is in the C++ "cv" namespace
 // N.B. classes are integer handwritten digits in range 0-9
 */
 /******************************************************************************/
+//tokenizer
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
 //returns the number of lines given a file
 int number_of_lines(char* filename)
 {
@@ -66,8 +84,8 @@ int* find_parameters_from_csv(char* filename_train, char* filename_test)
     int number_of_training_samples = 0;
     int number_of_testing_samples = 0;
     int number_of_attributes;
-    int results[3];  
-    char* attributes;
+    int* results;  
+    vector<string> attributes;
 
     FILE* f1 = fopen( filename_train, "r" );
     FILE* f2 = fopen( filename_test, "r" );
@@ -94,9 +112,9 @@ int* find_parameters_from_csv(char* filename_train, char* filename_test)
     //fa il trim
     line.erase(line.find_last_not_of(" \n\r\t")+1);
 
-    attributes = strtok(line.c_str(), ',');
+    attributes = split(line, ',');
  
-    number_of_attributes = attributes.length;
+    number_of_attributes = attributes.size() - 1;
 
     results[0] = number_of_training_samples;
     results[1] = number_of_testing_samples;
@@ -108,7 +126,7 @@ int* find_parameters_from_csv(char* filename_train, char* filename_test)
 // loads the sample database from file (which is a CSV text file)
 
 int read_data_from_csv(char* filename, Mat data, Mat classes,
-                       int n_samples )
+                       int n_samples, int ATTRIBUTES_PER_SAMPLE)
 {
     float tmp;
 
@@ -174,13 +192,15 @@ int main( int argc, char** argv )
     }
 
     //define number of training and testing samples and number of attributes
-    int* results = find_parameters_from_csv(argv[1], argv[2])
+    int* results = find_parameters_from_csv(argv[1], argv[2]);
     
     int NUMBER_OF_TRAINING_SAMPLES = results[0];
     int NUMBER_OF_TESTING_SAMPLES = results[1];
-    int ATTRIBUTES_PER_SAMPLE = result[2];
+    int ATTRIBUTES_PER_SAMPLE = results[2];
 
     int NUMBER_OF_CLASSES = atoi(argv[3]);
+
+    printf("N° of training samples: %d \nN° testing of samples: %d \nN° of attributes: %d \nN° of classes: %d \n", NUMBER_OF_TRAINING_SAMPLES,NUMBER_OF_TESTING_SAMPLES,ATTRIBUTES_PER_SAMPLE,NUMBER_OF_CLASSES );
 
     // define training data storage matrices (one for attribute examples, one
     // for classifications)
@@ -209,8 +229,8 @@ int main( int argc, char** argv )
 
     // load training and testing data sets
 
-    if (read_data_from_csv(argv[1], training_data, training_classifications, NUMBER_OF_TRAINING_SAMPLES) &&
-            read_data_from_csv(argv[2], testing_data, testing_classifications, NUMBER_OF_TESTING_SAMPLES))
+    if (read_data_from_csv(argv[1], training_data, training_classifications, NUMBER_OF_TRAINING_SAMPLES, ATTRIBUTES_PER_SAMPLE) &&
+            read_data_from_csv(argv[2], testing_data, testing_classifications, NUMBER_OF_TESTING_SAMPLES, ATTRIBUTES_PER_SAMPLE))
     {
         // define the parameters for training the random forest (trees)
 
@@ -243,7 +263,13 @@ int main( int argc, char** argv )
         Mat test_sample;
         int correct_class = 0;
         int wrong_class = 0;
-        int false_positives [NUMBER_OF_CLASSES] = {0,0};
+        int false_positives [NUMBER_OF_CLASSES];
+
+	//initialize every element in false_positives to 0
+	for (int z = 0; z < NUMBER_OF_CLASSES; z++)
+        {
+		false_positives[z] = 0;
+	}
 
         printf( "\nUsing testing database: %s\n\n", argv[2]);
 
