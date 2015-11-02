@@ -188,14 +188,14 @@ int main( int argc, char** argv )
     if(argc != 4)
     {
      	printf("Usage: %s file_training file_testing number_of_classes", argv[0]);
-        return 0;
+        exit(0);
     }
 
     //define number of training and testing samples and number of attributes
     int* results = find_parameters_from_csv(argv[1], argv[2]);
     
-    int NUMBER_OF_TRAINING_SAMPLES = results[0];
-    int NUMBER_OF_TESTING_SAMPLES = results[1];
+    int NUMBER_OF_TRAINING_SAMPLES = results[0] - 1;
+    int NUMBER_OF_TESTING_SAMPLES = results[1] -1 ;
     int ATTRIBUTES_PER_SAMPLE = results[2];
 
     int NUMBER_OF_CLASSES = atoi(argv[3]);
@@ -234,8 +234,14 @@ int main( int argc, char** argv )
     {
         // define the parameters for training the random forest (trees)
 
-        float priors[] = {1,1,1,1};  // weights of each classification for classes
+  	// weights of each classification for classes
         // (all equal as equal samples of each digit)
+        float priors[NUMBER_OF_CLASSES];
+	for (int z = 0; z < NUMBER_OF_CLASSES; z++)
+	{
+		priors[z] = 1;
+	}
+	//dà peso 1 a ciascuna classe all'inizio
 
         CvRTParams params = CvRTParams(25, // max depth
                                        2, // min sample count
